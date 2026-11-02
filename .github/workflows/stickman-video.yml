@@ -1,60 +1,64 @@
+# .github/workflows/stickman-video.yml
 name: Stickman Video Render
 
 on:
   workflow_dispatch:
     inputs:
       style:
-        description: "B style"
+        description: "Autopilot style"
         required: true
-        default: "B1"
         type: choice
+        default: "B1"
         options:
           - B1
           - B2
-      duration_seconds:
-        description: "Preview length in seconds for validation"
+      preview_seconds:
+        description: "Preview length in seconds"
         required: true
         default: "20"
         type: string
 
 jobs:
-  render-video:
+  autopilot-render:
+    name: Autopilot runtime check + preview + render
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
+
+    defaults:
+      run:
+        working-directory: skills/directing-stickman-videos
 
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      FFmpeg: /usr/bin/ffmpeg
-      FFPROBE: /usr/bin/ffprobe
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install FFmpeg
+      - name: Install FFmpeg + FFprobe
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Install project dependencies
-        run: npm ci
+      - name: Install dependencies
+        run: npm install
 
-      - name: Run skill doctor
+      - name: Run doctor check
         run: node scripts/autopilot.mjs doctor
 
-      - name: Create project outside skill folder
+      - name: Create project outside the skill folder
         run: |
-          mkdir -p $RUNNER_TEMP/stickman-project
-          node scripts/autopilot.mjs init $RUNNER_TEMP/stickman-project --style "${{ inputs.style }}"
+          mkdir -p /tmp/stickman-project
+          node scripts/autopilot.mjs init /tmp/stickman-project --style "${{ inputs.style }}"
 
-      - name: Prepare project.json
+      - name: Write project manifest
         run: |
-          cat > $RUNNER_TEMP/stickman-project/project.json <<'JSON'
+          cat > /tmp/stickman-project/project.json <<'JSON'
           {
             "version": 1,
             "style": "${{ inputs.style }}",
@@ -67,50 +71,57 @@ jobs:
               "tail": 0.35
             },
             "captions": [
-              {"start": 0.3, "end": 2.2, "text": "Your spoken phrase goes here."},
-              {"start": 2.2, "end": 4.5, "text": "This is your second caption."}
+              {"start": 0.30, "end": 2.20, "text": "This is your first spoken phrase."},
+              {"start": 2.20, "end": 4.60, "text": "This is your second spoken phrase."},
+              {"start": 4.60, "end": 7.00, "text": "This is your third spoken phrase."}
             ],
             "shots": [
               {
                 "start": 0,
-                "end": 4,
+                "end": 7,
                 "layers": [
                   {"type": "text", "text": "YOUR IDEA", "x": 90, "y": 140, "size": 58, "bold": true},
-                  {"type": "pose", "pose": 1, "x": 700, "y": 40, "w": 430},
-                  {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 170, "y": 260, "w": 170}
+                  {"type": "pose", "pose": 1, "x": 710, "y": 30, "w": 430},
+                  {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 170, "y": 260, "w": 160}
                 ]
               }
             ],
             "sfx": [
-              {"time": 0.3, "kind": "pop", "gain": 0.025}
+              {"time": 0.30, "kind": "pop", "gain": 0.025},
+              {"time": 3.20, "kind": "tap", "gain": 0.020}
             ]
           }
           JSON
 
-      - name: Copy narration audio
+      - name: Copy sample narration audio
         run: |
-          mkdir -p $RUNNER_TEMP/stickman-project
-          # replace this with your real narration.wav file
-          # cp /path/to/your/narration.wav $RUNNER_TEMP/stickman-project/narration.wav
+          # Replace this with your real narration.wav after you generate it
+          # Example:
+          # cp /path/to/your/narration.wav /tmp/stickman-project/narration.wav
+          echo "Sample workflow only. Add your real narration.wav before a real render."
 
-      - name: Validate preview
-        run: node scripts/autopilot.mjs validate $RUNNER_TEMP/stickman-project/project.json --seconds "${{ inputs.duration_seconds }}"
+      - name: Validate project
+        run: |
+          node scripts/autopilot.mjs validate /tmp/stickman-project/project.json --seconds "${{ inputs.preview_seconds }}"
 
-      - name: Preview sample
-        run: node scripts/autopilot.mjs preview $RUNNER_TEMP/stickman-project/project.json --seconds "${{ inputs.duration_seconds }}"
+      - name: Generate preview
+        run: |
+          node scripts/autopilot.mjs preview /tmp/stickman-project/project.json --seconds "${{ inputs.preview_seconds }}"
 
       - name: Approve preview
         run: |
           node scripts/autopilot.mjs approve \
-            $RUNNER_TEMP/stickman-project/project.json \
-            --note "Approved in GitHub Actions"
+            /tmp/stickman-project/project.json \
+            --note "Approved in GitHub Actions for full render"
 
       - name: Render full film
-        run: node scripts/autopilot.mjs render $RUNNER_TEMP/stickman-project/project.json
+        run: |
+          node scripts/autopilot.mjs render /tmp/stickman-project/project.json
 
-      - name: Upload artifacts
+      - name: Upload output artifacts
         uses: actions/upload-artifact@v4
         with:
           name: stickman-video-output
           path: |
-            $RUNNER_TEMP/stickman-project/**
+            /tmp/stickman-project/**
+          if-no-files-found: error
