@@ -51,7 +51,6 @@ jobs:
         run: node scripts/autopilot.mjs doctor
 
       - name: Create project outside skill folder
-        id: project
         shell: bash
         run: |
           PROJECT_DIR=/tmp/stickman-project-${{ github.run_id }}
@@ -75,24 +74,65 @@ jobs:
               "tail": 0.35
             },
             "captions": [
-              {"start": 0.30, "end": 2.20, "text": "This is your first spoken phrase."},
-              {"start": 2.20, "end": 4.60, "text": "This is your second spoken phrase."},
-              {"start": 4.60, "end": 7.00, "text": "This is your third spoken phrase."}
+              {"start": 0.30, "end": 3.80, "text": "This is your first thought."},
+              {"start": 4.00, "end": 7.80, "text": "This is your second point."},
+              {"start": 8.00, "end": 11.80, "text": "Now the idea starts to click."},
+              {"start": 12.00, "end": 15.80, "text": "The important takeaway arrives here."},
+              {"start": 16.00, "end": 19.60, "text": "And this is the final message."}
             ],
             "shots": [
               {
                 "start": 0,
-                "end": 7,
+                "end": 4,
                 "layers": [
-                  {"type": "text", "text": "YOUR IDEA", "x": 90, "y": 140, "size": 58, "bold": true},
-                  {"type": "pose", "pose": 1, "x": 710, "y": 30, "w": 430},
+                  {"type": "text", "text": "IDEA 1", "x": 90, "y": 140, "size": 52, "bold": true},
+                  {"type": "pose", "pose": 1, "x": 700, "y": 40, "w": 430},
+                  {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 170, "y": 260, "w": 160}
+                ]
+              },
+              {
+                "start": 4,
+                "end": 8,
+                "layers": [
+                  {"type": "text", "text": "POINT 2", "x": 90, "y": 150, "size": 52, "bold": true},
+                  {"type": "pose", "pose": 2, "x": 700, "y": 40, "w": 430},
+                  {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 180, "y": 260, "w": 160}
+                ]
+              },
+              {
+                "start": 8,
+                "end": 12,
+                "layers": [
+                  {"type": "text", "text": "INSIGHT", "x": 90, "y": 140, "size": 52, "bold": true},
+                  {"type": "pose", "pose": 0, "x": 710, "y": 30, "w": 430},
+                  {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 190, "y": 250, "w": 170}
+                ]
+              },
+              {
+                "start": 12,
+                "end": 16,
+                "layers": [
+                  {"type": "text", "text": "TAKEAWAY", "x": 90, "y": 140, "size": 52, "bold": true},
+                  {"type": "pose", "pose": 1, "x": 700, "y": 40, "w": 430},
+                  {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 180, "y": 260, "w": 160}
+                ]
+              },
+              {
+                "start": 16,
+                "end": 20,
+                "layers": [
+                  {"type": "text", "text": "FINAL", "x": 100, "y": 140, "size": 58, "bold": true},
+                  {"type": "pose", "pose": 2, "x": 710, "y": 30, "w": 430},
                   {"type": "image", "path": "@b1/idea-bulb-crayon.png", "x": 170, "y": 260, "w": 160}
                 ]
               }
             ],
             "sfx": [
               {"time": 0.30, "kind": "pop", "gain": 0.025},
-              {"time": 3.20, "kind": "tap", "gain": 0.020}
+              {"time": 4.20, "kind": "tap", "gain": 0.020},
+              {"time": 8.20, "kind": "pop", "gain": 0.025},
+              {"time": 12.20, "kind": "tap", "gain": 0.020},
+              {"time": 16.20, "kind": "pop", "gain": 0.025}
             ]
           }
           JSON
