@@ -99,13 +99,10 @@ jobs:
         env:
           PROJECT_DIR: ${{ env.PROJECT_DIR }}
 
-      - name: Copy your narration audio
+      - name: Create dummy narration.wav for validation
         shell: bash
         run: |
-          # Replace this with your real file if you have one.
-          # Example:
-          # cp /path/to/your/narration.wav "$PROJECT_DIR/narration.wav"
-          echo "Add a real narration.wav before full production render."
+          ffmpeg -y -f lavfi -i "anullsrc=r=22050:cl=stereo" -t 20 "$PROJECT_DIR/narration.wav"
         env:
           PROJECT_DIR: ${{ env.PROJECT_DIR }}
 
